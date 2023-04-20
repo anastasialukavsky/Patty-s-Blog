@@ -233,6 +233,12 @@ async function seed() {
 
     const newUser = await User.bulkCreate(users, { validate: true });
 
+    for (let user of newUser) {
+      const userList = newUser.filter((usr) => user.id !== usr.id);
+  
+      await user.addFollower(userList);
+    }
+
     console.log('Seeding users successful...');
 
     /**

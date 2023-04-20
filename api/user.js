@@ -110,8 +110,103 @@ router.delete('/:userId', requireToken, async (req, res, next) => {
   }
 });
 
+/**
+ * FOLLOWERS
+ */
+
+router.get('/:userId/followers', requireToken, async (req, res, next) => {
+  try {
+    const userId = +req.params.userId;
+
+    if (!userId) return res.status(404).send('User does not exist');
+
+    const followers = await User.findOne({
+      include: 'Follower',
+      where: { id: userId },
+    });
+
+    if (!followers) return res.status(404).send('User does not exist');
+
+    if (followers.Follower === undefined || followers.Follower.length === 0)
+      return res.status(404).send('User has no followers');
+
+    res.status(200).json(followers);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/:userId/following', requireToken, async (req, res, next) => {
+  try {
+    const userId = +req.params.userId;
+    if (!userId) return res.status(404).send('User does not exist');
+
+    const user = await User.findByPk(userId, { include: 'Following' });
+    if (!user || user === undefined)
+      return res.status(404).send('User with given id does not exist');
+
+      
+    if (!user.Following || user.Following.length === 0)
+      return res.status(404).send('User does not follow anyone');
+
+    res.status(200).json(user);
+  } catch (err) {
+    next(err);
+  }
+});
 
 
+router.put('/:userId/followers', requireToken, async (req, res, next) => {
+  try {
+    const userId = +req.params.userId;
+    if (!userId) return res.status(404).send('User does not exist');
+
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).send('User does not exist');
+
+    const { newFollowerId } = req.body;
+    if (!newFollowerId)
+      return res
+        .status(400)
+        .send('User does not have any new follower requests');
+
+    const addFollower = await user.addFollower(newFollowerId);
+    if (!addFollower)
+      return res.status(400).send('Follower has been added already');
+
+    res.status(200).json(addFollower);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/:userId/followers', requireToken, async (req, res, next) => {
+  try {
+    const userId = +req.params.userId;
+    if (!userId) return res.status(404).send('User does not exist');
+
+    const userFromWhomToDelete = await User.findByPk(userId, {
+      include: 'Follower',
+    });
+
+    if (!userFromWhomToDelete || userFromWhomToDelete === undefined)
+      return res.status(400).send('User with given id does not exist');
+    const { followerToDelete } = req.body;
+
+    const deleteFollower = await userFromWhomToDelete.removeFollower(
+      followerToDelete
+    );
+    
+    if (!deleteFollower)
+      return res.status(400).send('Follower already  has been deleted');
+
+    const updatedUser = await User.findByPk(userId, { include: 'Follower' });
+
+    res.status(200).send(updatedUser);
+  } catch (err) {
+    next(err);
+  }
+});
 
 /**
  * ADMIN
@@ -125,6 +220,5 @@ router.get('/', requireToken, isAdmin, async (req, res, next) => {
     next(err);
   }
 });
-
 
 module.exports = router;

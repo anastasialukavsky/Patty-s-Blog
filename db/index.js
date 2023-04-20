@@ -27,14 +27,14 @@ Tag.belongsToMany(Post, { through: 'post_tags' });
 
 User.belongsToMany(User, {
   as: 'Follower',
-  through: 'FollowersFollowing',
-  foreignKey: 'FollowerId',
+  through: { model: 'FollowersFollowing', paranoid: true },
+  foreignKey: 'FollowingId',
 });
 
 User.belongsToMany(User, {
   as: 'Following',
-  through: 'FollowersFollowing',
-  foreignKey: 'FollowingId',
+  through: { model: 'FollowersFollowing', paranoid: true },
+  foreignKey: 'FollowerId',
 });
 
 Auth.authenticate = async ({ email, password }) => {
