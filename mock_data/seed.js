@@ -278,7 +278,7 @@ async function seed() {
       user.createComment(currentComment);
     }
 
-    console.log('Seeding posts successful...');
+    console.log('Seeding comments successful...');
 
     /**
      * TAG SEED
