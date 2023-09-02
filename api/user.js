@@ -35,7 +35,7 @@ router.post('/', async (req, res, next) => {
     const { email, password, firstName, lastName } = req.body;
     const checkDupEmail = await Auth.findAll({ where: { email } });
     if (checkDupEmail.length >= 1)
-      return res.status(400).send('This email aleready exists in the database');
+      return res.status(400).send('This email already exists in the database');
     const newUser = await User.create({ firstName, lastName });
     const newAuth = await newUser.createAuth({ email, password });
     const user = await User.findByPk(newUser.id, {
@@ -145,7 +145,6 @@ router.get('/:userId/following', requireToken, async (req, res, next) => {
     if (!user || user === undefined)
       return res.status(404).send('User with given id does not exist');
 
-      
     if (!user.Following || user.Following.length === 0)
       return res.status(404).send('User does not follow anyone');
 
@@ -154,7 +153,6 @@ router.get('/:userId/following', requireToken, async (req, res, next) => {
     next(err);
   }
 });
-
 
 router.put('/:userId/followers', requireToken, async (req, res, next) => {
   try {
@@ -196,7 +194,7 @@ router.delete('/:userId/followers', requireToken, async (req, res, next) => {
     const deleteFollower = await userFromWhomToDelete.removeFollower(
       followerToDelete
     );
-    
+
     if (!deleteFollower)
       return res.status(400).send('Follower already  has been deleted');
 
